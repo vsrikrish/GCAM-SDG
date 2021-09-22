@@ -2,7 +2,7 @@ from mpi4py import MPI
 import numpy as np
 import os
 import subprocess
-from manage_files import create_sandbox, create_config_file
+from manage_files import create_sandbox, create_config_file, check_run_success
 from setup_experiment import factorial_design
 
 # start MPI communicator
@@ -16,8 +16,13 @@ nlevels = [2, 4, 5, 5, 5, 5, 3, 2]
 if rank == 0:
     print(size)
     exp_design = factorial_design(nlevels)
+    run_status = np.empty(np.prod(nlevels), dtype=bool)
+    outpath = '/gpfs/scratch/vxs914/output'
+    for i in range(np.prod(nlevels)):
+        run_status[i] = check_run_success(exp_design[i,:], outpath)
     # split factor array for scattering
-    exp_split = np.array_split(exp_design, size, axis=0)
+    run = np.where(run_status == 0)[0]
+    exp_split = np.array_split(exp_design[run, :], size, axis=0)
     # get sizes of split buffers for sending
     split_sizes=np.zeros(size, dtype=np.int)
     for i in range(0, size, 1):
