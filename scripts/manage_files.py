@@ -175,6 +175,11 @@ def create_config_file(levels, sandbox):
 def check_run_success(level, outpath):
     scenName = '-'.join(l for l in level.astype(str))
     f = os.path.join(outpath, f'output_{scenName}.txt')
+    return os.path.isfile(f)
+
+def check_no_errors(level, outpath):
+    scenName = '-'.join(l for l in level.astype(str))
+    f = os.path.join(outpath, f'output_{scenName}.txt')
     if os.path.isfile(f):
         errs = [re.findall(r'^ERROR:-*\d+', line) for line in open(f, 'r')]
         return not any(errs)
